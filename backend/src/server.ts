@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 
 import connectDB from './configs/connectDB.config';
 
+import authRouter from './routes/auth.routes';
+
 const app = express();
 
 connectDB();
@@ -19,6 +21,8 @@ const PORT = process.env.PORT;
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+app.use('/api/auth', authRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

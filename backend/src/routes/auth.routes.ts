@@ -3,10 +3,10 @@ import { register, login, logout } from '../controllers/auth.controller';
 import isAuth from '../middlewares/isAuth.middlewares';
 import { uploadProfile } from '../middlewares/uplaod.multer.middlewre';
 
-const router = express.Router();
+const authRouter = express.Router();
 
-router.post('/register', uploadProfile.single('profilePicture'), register);
-router.post('/login', login);
-router.get('/logout', isAuth, logout);
+authRouter.post('/register', uploadProfile.single('profilePicture'), register);
+authRouter.post('/login', login);
+authRouter.get('/logout', isAuth, logout);
 
-export default router;
+export default authRouter;
