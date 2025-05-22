@@ -1,11 +1,12 @@
 import messageModel from '../models/message.models';
 import { Request, Response } from 'express';
+import socketService from '../services/socket.service';
 
 export const createMessage = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const userId: string = (req as any).user.userId;
+  const { userId } = (req as any).user;
   const { receiverId } = req.params;
   const { content } = req.body;
   try {
@@ -20,11 +21,21 @@ export const createMessage = async (
       content,
     });
 
+    // Populate the sender and receiver fields for the response
+    const populatedMessage = await messageModel
+      .findById(newMessage._id)
+      .populate('sender', 'username profilePicture')
+      .populate('receiver', 'username profilePicture');
+
+    // Send message via Socket.io
+    socketService.sendPrivateMessage(userId, receiverId, populatedMessage);
+
     res.status(201).json({
       message: 'Message created successfully',
-      data: newMessage,
+      data: populatedMessage,
     });
   } catch (error) {
+    console.error('Error creating message:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -33,7 +44,7 @@ export const getMessages = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const userId: string = (req as any).user.userId;
+  const { userId } = (req as any).user;
   const { receiverId } = req.params;
 
   try {
@@ -45,7 +56,8 @@ export const getMessages = async (
         ],
       })
       .sort({ createdAt: 1 })
-      .populate('sender receiver');
+      .populate('sender', 'username profilePicture')
+      .populate('receiver', 'username profilePicture');
 
     res.status(200).json({ messages: messageData });
   } catch (error) {
